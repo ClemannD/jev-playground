@@ -10,6 +10,10 @@ There are three question types:
 - **score**: rate against ordered levels, with a probability for each level and a confidence
 - **boolean**: the probability that the answer is yes
 
+![Workbench: build questions and see each answer's probability distribution](docs/workbench.png)
+
+![Vibe Check: any spectrum becomes a score, with the request and response shown below](docs/vibe-check.png)
+
 ## What's inside
 
 | Widget | What it teaches |
