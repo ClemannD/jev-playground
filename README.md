@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Jev Playground
 
-## Getting Started
+An interactive playground for learning how [Jev](https://docs.typesafe.ai/introduction) works. Jev is TypeSafe's
+"System One" model. It doesn't generate text: you give it some **state** (text or JSON) and a set of typed
+**questions**, and it answers all of them at once with **probabilities** your code can use directly.
 
-First, run the development server:
+There are three question types:
+
+- **choice**: pick one option, with a probability for each option and a confidence
+- **score**: rate against ordered levels, with a probability for each level and a confidence
+- **boolean**: the probability that the answer is yes
+
+## What's inside
+
+| Widget | What it teaches |
+| --- | --- |
+| Workbench | Build any mix of questions and see the raw answers |
+| Live Router | Intent routing as you type, with actions gated on confidence |
+| Inbox Triage | Asking many questions per item, and sending many items in parallel |
+| Composite Scorer | Scoring separate criteria, then combining them with weights in code |
+| Agent Pilot | Deciding an agent's next step from structured JSON state |
+| Guardrail | Checking an LLM's draft reply against a policy before it's sent |
+| Vibe Check | Turning any spectrum you describe into a score |
+| Race vs LLM | Speed and cost compared with a general-purpose LLM |
+
+Under every widget you'll see the exact request and response side by side. The sidebar log tracks latency, time
+spent inside the model, and cost.
+
+## Run it yourself
+
+You'll need Node 20+ and a [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) API key.
 
 ```bash
+git clone https://github.com/ClemannD/jev-playground.git
+cd jev-playground
+npm install
+echo "AI_GATEWAY_API_KEY=your_key_here" > .env
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+All Jev calls go through one route, `src/app/api/evaluate/route.ts`, which uses the AI SDK:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```ts
+import { experimental_evaluate as evaluate } from "ai";
 
-## Learn More
+const { answers } = await evaluate({
+  model: "typesafe-ai/jev",
+  state: "The support agent issued a full refund to the customer.",
+  questions: {
+    refunded: { type: "boolean", instructions: "Was a refund issued?" },
+  },
+});
+```
 
-To learn more about Next.js, take a look at the following resources:
+To add your own experiment, copy a widget in `src/components/widgets/`, call `ask()` from `src/lib/client.ts`, and
+register it in `src/components/App.tsx`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> **Note:** AI Gateway's free tier rate-limits Jev requests. If you see a rate-limit message, wait a couple of
+> minutes or add credits to your Vercel team.
